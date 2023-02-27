@@ -22,7 +22,7 @@ variaveis_indice = ['Área construída [m²]', 'FTE', 'Consumo [m³]', 'Água_Cu
                         'kWh/habitante/dia', 'litros/habitante/dia', 'residuos/habitante/dia']
 
 variaveis_separador = ['Projeto', 'Cidade', 'UF', 'Tipologia', 'HVAC', 'Torre de resfriamento', 'ETE', 
-                       'Nível', 'Fonte', 'Fornecedor - Mercado livre']
+                       'Nível', 'Fonte', 'Fornecedor - Mercado livre', 'Ano_Benchmarking']
 
 #O IF NESSE CASO É USADO COMO CONDICIONARL PARA QUE O BENCHMARKING SÓ APAREÇA APÓS UPLOAD DO ARQUIVO
 if csv_file is not None:
@@ -32,24 +32,34 @@ if csv_file is not None:
     if check_salvalus == True:
         df.drop(df[df['Projeto'] == 'Hospital Salvalus'].index, inplace = True)
 
+    df['Ano_Benchmarking'] = df['Ano_Benchmarking'].astype('string')
     df['kWh/habitante/dia'] = df['Consumo [kWh]']/df['FTE']/22
     df['litros/habitante/dia'] = (df['Consumo [m³]']*1000)/df['FTE']/22
     df['residuos/habitante/dia'] = df['Geração [kg]']/df['FTE']/22
 
     #HEADER FALANDO DO NÚMERO DE PROJETOS
-    st.header('O benchmarking possui :green[{}] projetos diferentes'.format(df['Projeto'].nunique()))
+    st.header('O benchmarking possui :green[{}] projetos diferentes'.format(df['Projeto'].nunique()+1))
     st.write('Abaixo a planilha contendo todos os dados')
     st.write(df)
 
     projetos = df['Projeto'].unique()
-    df_agrupada = df.groupby(['Projeto', 'Cidade', 'UF', 'Tipologia']).mean().reset_index().round(2)
+    df_agrupada = df.groupby(['Projeto', 'Cidade', 'UF', 'Tipologia', 'Ano_Benchmarking']).mean().reset_index().round(2)
+    df_agrupada_ano = df_agrupada.groupby('Ano_Benchmarking').count().reset_index()
 
     #st.write(df_agrupada['Consumo [m³]'].value_counts())
     st.write('#')
     st.write('#')
     st.title('Visão Geral')
+
+
+    fig = px.bar(df_agrupada_ano, x='Ano_Benchmarking', y='Projeto')
+    fig.update_layout(title='Projetos realizados por ano', title_x = 0.33)
+    st.plotly_chart(fig)
+
     st.subheader('Selecione uma variável numérica e uma variável categórica para entender a distribuição dos empreendimentos por categoria')
     st.caption('Os valores dizem respeito às :green[médias] das variáveis numéricas selecionadas. As variáveis de dia consideram :green[22 dias úteis]')
+
+ 
 
     #SELEÇÃO DOS DA VARIÁVEL E SEPARADOR
     col1, col2= st.columns(2)    
@@ -57,11 +67,20 @@ if csv_file is not None:
         indice_1 = st.selectbox('**Selecione uma variável**', variaveis_indice)
     with col2:
         separador_1 = st.selectbox('**Selecione um separador**', variaveis_separador)
-    
+ 
+    #SELEÇÃO DA OPÇÃO DE LIMITAR AO PERCENTIL
+    checkbox_percentil = st.checkbox('Remover dados extremos? (1% maiores)')
+
+
     #ESSE TRECHO MONTA O GRÁFICO DA DISTRIBUIÇÃO POR VARIÁVEL E SEPARADOR. TAMBÉM FAZ O PRIMEIRO QUARTIL, A MÉDIA E O TERCEIRO QUARTIL
     if indice_1 and separador_1 is not None:
 
         df_separada = df.groupby([separador_1]).mean().reset_index().round(2)
+
+        #COLOCAR LIMITES NOS DADOS DEPENDENDO DOS QUARTIS
+        perc_99 = df_separada[indice_1].quantile(0.95)
+        if checkbox_percentil == True:
+            df_separada = df_separada[df_separada[indice_1] < perc_99]
 
         col_1, col_2, col_3 = st.columns(3)   
         col_1.metric("25%: ", df_separada[indice_1].quantile(0.25).round(2))
@@ -73,6 +92,7 @@ if csv_file is not None:
         fig_filtro.add_hline(y=df_separada[indice_1].quantile(0.25), line_color='purple', line_dash='dash')
         fig_filtro.add_hline(y=df_separada[indice_1].quantile(0.75), line_color='purple', line_dash='dash')
         fig_filtro.update_traces(marker_color='#21F1A2')
+        fig_filtro.update_layout(title='Relação de {} por {}'.format(indice_1, separador_1), title_x = 0.29)
         st.plotly_chart(fig_filtro)
 
 
@@ -92,6 +112,7 @@ if csv_file is not None:
         fig_filtro.add_hline(y=df_agrupada[indice].quantile(0.25), line_color='purple', line_dash='dash')
         fig_filtro.add_hline(y=df_agrupada[indice].quantile(0.75), line_color='purple', line_dash='dash')
         fig_filtro.update_traces(marker_color='#21F1A2')
+        fig_filtro.update_layout(title='Comparação entre projetos selecionados', title_x = 0.33)
         st.plotly_chart(fig_filtro)
     
     
@@ -110,6 +131,7 @@ if csv_file is not None:
     check_tipologia = st.checkbox('Comparar apenas com mesma tipologia')
 
     #PLOTA AS MÉTRICAS A PARTIR DA COMPARAÇÃO PERCENTUAL COM OS VALORES DAS BASES ORIGINAIS
+
     if prj_unico is not None:
         col_1_a, col_1_b, col_1_c, col_1_d = st.columns(4)
         if check_tipologia == True:
@@ -132,6 +154,7 @@ if csv_file is not None:
     if indice_3 is not None:
         fig_hist = px.histogram(x=df_agrupada[indice_3], nbins=35, hover_name=df_agrupada['Projeto'])
         fig_hist.update_traces(marker_color='#21F1A2')
+        fig_hist.update_layout(title='{}: Distribuição ao longo dos projetos'.format(indice_3), title_x = 0.33)
         st.plotly_chart(fig_hist)
 
     #SCATTERPLOTS
@@ -148,4 +171,5 @@ if csv_file is not None:
     fig = px.scatter(x=df_agrupada[indice_4], y=df_agrupada[indice_5], hover_name=df_agrupada['Projeto'])
     fig.update_traces(marker=dict(size=12))
     fig.update_traces(marker_color='#21F1A2')
+    fig.update_layout(title='Relação de crescimento entre {} e {}'.format(indice_4, indice_5), title_x = 0.2)
     st.plotly_chart(fig)
