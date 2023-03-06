@@ -53,9 +53,7 @@ if csv_file is not None:
     st.title('Visão Geral')
 
 
-    fig = px.bar(df_agrupada_ano, x='Ano_Benchmarking', y='Projeto')
-    fig.update_layout(title='Projetos realizados por ano', title_x = 0.33)
-    fig.update_traces(marker_color='#21F1A2')
+    fig = px.pie(df_agrupada_ano, values='Projeto', names='Ano_Benchmarking', color_discrete_sequence=px.colors.sequential.Greens_r, title='Projetos por ano do benchmarking')
     st.plotly_chart(fig)
 
     st.subheader('Selecione uma variável numérica e uma variável categórica para entender a distribuição dos empreendimentos por categoria')

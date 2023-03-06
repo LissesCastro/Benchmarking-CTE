@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
-from janitor import xlsx_table
-from openpyxl import load_workbook
-from openpyxl.utils.dataframe import dataframe_to_rows
+#from janitor import xlsx_table
+#from openpyxl import load_workbook
+#from openpyxl.utils.dataframe import dataframe_to_rows
 import glob
 import os
-import regex
+#import regex
 
 
 def alimentar_base(arquivos, df_base):
