@@ -6,6 +6,7 @@ charset-normalizer==3.1.0
 colorama==0.4.6
 cycler==0.11.0
 decorator==5.1.1
+docopt==0.6.2
 entrypoints==0.4
 fonttools==4.38.0
 idna==3.4
@@ -14,7 +15,10 @@ MarkupSafe==2.1.2
 mdurl==0.1.2
 numpy==1.24.2
 packaging==23.0
+pandas==1.5.3
 Pillow==9.4.0
+pipreqs==0.4.11
+plotly==5.13.1
 protobuf==3.20.3
 pyarrow==11.0.0
 Pygments==2.14.0
@@ -37,4 +41,5 @@ tzdata==2022.7
 urllib3==1.26.14
 validators==0.20.0
 watchdog==2.3.1
+yarg==0.1.9
 zipp==3.15.0
