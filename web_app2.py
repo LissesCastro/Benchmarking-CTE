@@ -1,4 +1,5 @@
 #IMPORTANDO AS BIBLIOTECAS UTILIZADAS NO PROJETO
+
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -7,7 +8,7 @@ import plotly.figure_factory as ff
 import matplotlib.pyplot as plt
 import seaborn as sns 
 
-st.sidebar.header(':green[Teste]')
+#st.sidebar.header(':green[Teste]')
 
 #HEADER E UPLOADER DO ARQUIVO CSV DE BENCHMARKING
 st.title(":green[Visualização de dados de Benchmarking - O+M CTE]")
@@ -28,9 +29,9 @@ variaveis_separador = ['Projeto', 'Cidade', 'UF', 'Tipologia', 'HVAC', 'Torre de
 if csv_file is not None:
     df = pd.read_csv(csv_file, encoding='latin-1', delimiter=';', decimal=',') 
 
-    check_salvalus = st.checkbox('Remover Salvalus?')
-    if check_salvalus == True:
-        df.drop(df[df['Projeto'] == 'Hospital Salvalus'].index, inplace = True)
+    #check_salvalus = st.checkbox('Remover Salvalus?')
+    #if check_salvalus == True:
+    #    df.drop(df[df['Projeto'] == 'Hospital Salvalus'].index, inplace = True)
 
     df['Ano_Benchmarking'] = df['Ano_Benchmarking'].astype('string')
     df['kWh/habitante/dia'] = df['Consumo [kWh]']/df['FTE']/22
@@ -54,6 +55,7 @@ if csv_file is not None:
 
     fig = px.bar(df_agrupada_ano, x='Ano_Benchmarking', y='Projeto')
     fig.update_layout(title='Projetos realizados por ano', title_x = 0.33)
+    fig.update_traces(marker_color='#21F1A2')
     st.plotly_chart(fig)
 
     st.subheader('Selecione uma variável numérica e uma variável categórica para entender a distribuição dos empreendimentos por categoria')
